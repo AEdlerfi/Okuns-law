@@ -97,14 +97,15 @@ beta1 <- 0.04
 
 buildOkuns <- function(p){
   
+  FF(OkunsDLM)[3] <- p[2]*-1
   
   V(OkunsDLM)  <- exp(p[1])
   
   GG(OkunsDLM)[1,1]  <- 1
   
-  GG(OkunsDLM)[2,2]  <- p[2] 
+  GG(OkunsDLM)[2,2]  <- 1 
   
-  GG(OkunsDLM)[3,3]  <- -1*p[2] 
+  GG(OkunsDLM)[3,3]  <- 1 
   
   W(OkunsDLM)[1,1] <- exp(p[3])
   
@@ -130,4 +131,21 @@ okuns.est <-  dlmMLE(y = mod_data$dur, parm = c(-1.4,-0.049,-4,-3), build = buil
 
 OkunsDLM1 <- buildOkuns(okuns.est$par)
 
+
+#--------------------------------------------------------------------------------------------------------------------------
+# filtered and smoothed estimates
+#--------------------------------------------------------------------------------------------------------------------------
+
+filtered <- dlmFilter(y = mod_data$dur, mod = OkunsDLM1)
+
 smoothed <- dlmSmooth(y = mod_data$dur, mod = OkunsDLM1)
+
+residuals(filtered)
+
+
+data.frame(GDPgrowth = mod_data$d2lgdp[-1],
+           Potential = dropFirst(filtered$a[,3]),
+           Date = seq(as.Date("1960-12-01"),as.Date("2015-03-01"), by = "quarter")) %>% 
+  gather(Var, Val, -Date) %>% 
+  ggplot()+
+  geom_line(aes(Date,Val, colour = Var))
