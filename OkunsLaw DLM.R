@@ -59,7 +59,7 @@ const_coef <- nls(formula = dur~ b1*dur_lag1 + b2*(d2lgdp-b0) + b3*d2lrulc_lag2 
 
 
 #--------------------------------------------------------------------------------------------------------------------------
-# tvp model
+# tvp model no wages - dur = alpha*dur(-1)+ beta(dgdp-potential)
 #--------------------------------------------------------------------------------------------------------------------------
 
 # Construct DLM
@@ -149,3 +149,4 @@ data.frame(GDPgrowth = mod_data$d2lgdp[-1],
   gather(Var, Val, -Date) %>% 
   ggplot()+
   geom_line(aes(Date,Val, colour = Var))
+
