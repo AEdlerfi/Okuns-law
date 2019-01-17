@@ -124,6 +124,7 @@ buildOkuns <- function(p){
   }
 
 
+
 okuns.est <-  dlmMLE(y = mod_data$dur, parm = c(-1.4,-0.049,-4,-3), build = buildOkuns)
 
 
