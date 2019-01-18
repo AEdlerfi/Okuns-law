@@ -247,3 +247,25 @@ data.frame(GDPgrowth = mod_data$d2lgdp[-1],
   ggplot()+
   geom_line(aes(Date,Val, colour = Var))
 
+
+States <- data.frame(Date = seq(as.Date("1960-12-01"),as.Date("2015-03-01"), by = "quarter"), 
+                     GDPgrowth = mod_data$d2lgdp[-1],
+                     Potential = dropFirst(filtered.fm$a[,4])/(-1*dropFirst(filtered.fm$a[,2])),
+                     alpha = dropFirst(filtered.fm$a[,1]),
+                     beta = dropFirst(filtered.fm$a[,2]),
+                     gamma = dropFirst(filtered.fm$a[,3])
+                     
+                     
+                     )
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# recreating estiamtes in table 1
+#--------------------------------------------------------------------------------------------------------------------------
+
+data.frame(alpha = last(States$alpha),
+           beta = last(States$beta),
+           `Potential output growth` = last(States$Potential),
+           gamma = last(States$gamma),
+           `Okuns coef` = 4*last(States$beta)/(1-last(States$alpha))
+)
