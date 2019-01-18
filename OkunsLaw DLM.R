@@ -150,3 +150,100 @@ data.frame(GDPgrowth = mod_data$d2lgdp[-1],
   ggplot()+
   geom_line(aes(Date,Val, colour = Var))
 
+
+#--------------------------------------------------------------------------------------------------------------------------
+# tvp model full model - dur = alpha*dur(-1)+ beta(dgdp-potential) + gamma*wages
+#--------------------------------------------------------------------------------------------------------------------------
+
+# Construct DLM
+
+OkunsDLMfm <- dlm(
+  
+  
+  FF = matrix(c(1,1,1,1),ncol = 4, byrow = TRUE),
+  
+  V = matrix(1),
+  
+  GG = matrix(c(1,0,0,0,
+                0,1,0,0,
+                0,0,1,0,
+                0,0,0,1), ncol = 4, byrow = TRUE),
+  
+  W =  matrix(c(1,0,0,0,
+                0,1,0,0,
+                0,0,1,0,
+                0,0,0,1), ncol = 4, byrow = TRUE),
+  
+  JFF = matrix(c(1,2,3,0),ncol = 4, byrow = TRUE),
+  
+  X = cbind(mod_data$dur_lag1,mod_data$d2lgdp, mod_data$d2lrulc_lag2),
+  
+  m0 = c(0,0,0,0),
+  
+  C0 = matrix(c(1e+07,0,0,0,
+                0,1e+07,0,0,
+                0,0,1e+07,0,
+                0,0,0,1e+07), ncol = 4, byrow = TRUE)
+  
+)
+
+
+buildOkunsFM <- function(p){
+  
+  #FF(OkunsDLMfm)[4] <-  
+
+  V(OkunsDLMfm)  <- exp(p[2])
+  
+  GG(OkunsDLMfm)[1,1]  <- 1
+  
+  GG(OkunsDLMfm)[2,2]  <- 1
+  
+  GG(OkunsDLMfm)[3,3]  <- 1 
+  
+  GG(OkunsDLMfm)[4,4]  <- 1
+  
+  W(OkunsDLMfm)[1,1] <- exp(p[3])
+  
+  W(OkunsDLMfm)[2,2] <- 0
+  
+  W(OkunsDLMfm)[3,3] <- 0
+  
+  W(OkunsDLMfm)[4,4] <- exp(p[4])
+  
+  m0(OkunsDLMfm) <- c(0,0,0,p[1]*-4)
+  
+  C0(OkunsDLMfm)[1,1] <- 1
+  
+  C0(OkunsDLMfm)[4,4] <- 5
+  
+  
+  return(OkunsDLMfm)
+  
+}
+
+
+
+okuns.estfm <-  dlmMLE(y = mod_data$dur, parm = c(-0.049,-1.4,-6,-5), build = buildOkunsFM)
+
+
+OkunsDLM1fm <- buildOkunsFM(okuns.estfm$par)
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# filtered and smoothed estimates
+#--------------------------------------------------------------------------------------------------------------------------
+
+filtered.fm <- dlmFilter(y = mod_data$dur, mod = OkunsDLM1fm)
+
+smoothed <- dlmSmooth(y = mod_data$dur, mod = OkunsDLM1fm)
+
+residuals(filtered)
+
+
+data.frame(GDPgrowth = mod_data$d2lgdp[-1],
+           Potential = dropFirst(filtered.fm$a[,4])/(-1*dropFirst(filtered.fm$a[,2])),
+           Date = seq(as.Date("1960-12-01"),as.Date("2015-03-01"), by = "quarter")) %>% 
+  gather(Var, Val, -Date) %>% 
+  ggplot()+
+  geom_line(aes(Date,Val, colour = Var))
+
