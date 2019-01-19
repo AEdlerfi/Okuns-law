@@ -20,7 +20,7 @@ library(readxl)
 #   Real gdp
 
 
-tldata <- read_excel("TLdata2015.xlsx", sheet = "Sheet1", range = "A1:D224")
+tldata <- read_excel("TLdata2018.xlsx", sheet = "Sheet1", range = "A1:D238")
 
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -59,6 +59,8 @@ const_coef <- nls(formula = dur~ b1*dur_lag1 + b2*(d2lgdp-b0) + b3*d2lrulc_lag2 
 #--------------------------------------------------------------------------------------------------------------------------
 # tvp model full model - dur = alpha*dur(-1)+ beta(dgdp-potential) + gamma*wages
 #--------------------------------------------------------------------------------------------------------------------------
+
+beta.start <- as.vector(coef(const_coef)[3])
 
 # Construct DLM
 
@@ -126,7 +128,7 @@ buildOkunsFM <- function(p){
 
 
 
-okuns.estfm <-  dlmMLE(y = mod_data$dur, parm = c(-0.049,-1.4,-6,-5), build = buildOkunsFM)
+okuns.estfm <-  dlmMLE(y = mod_data$dur, parm = c(beta.start,-1.4,-6,-5), build = buildOkunsFM)
 
 
 OkunsDLM1fm <- buildOkunsFM(okuns.estfm$par)
@@ -145,13 +147,13 @@ residuals(filtered)
 
 data.frame(GDPgrowth = mod_data$d2lgdp,
            Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
-           Date = seq(as.Date("1960-09-01"),as.Date("2015-03-01"), by = "quarter")) %>% 
+           Date = seq(as.Date("1960-09-01"),as.Date("2018-09-01"), by = "quarter")) %>% 
   gather(Var, Val, -Date) %>% 
   ggplot()+
   geom_line(aes(Date,Val, colour = Var))
 
 
-States <- data.frame(Date = seq(as.Date("1960-09-01"),as.Date("2015-03-01"), by = "quarter"), 
+States <- data.frame(Date = seq(as.Date("1960-09-01"),as.Date("2018-09-01"), by = "quarter"), 
                      GDPgrowth = mod_data$d2lgdp,
                      Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
                      alpha = dropFirst(filtered.fm$m[,1]),
@@ -172,3 +174,4 @@ data.frame(alpha = last(States$alpha),
            gamma = last(States$gamma),
            `Okuns coef` = 4*last(States$beta)/(1-last(States$alpha))
 )
+
