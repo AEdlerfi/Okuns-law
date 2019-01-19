@@ -95,8 +95,6 @@ OkunsDLMfm <- dlm(
 
 buildOkunsFM <- function(p){
   
-  #FF(OkunsDLMfm)[4] <-  
-
   V(OkunsDLMfm)  <- exp(p[2])
   
   GG(OkunsDLMfm)[1,1]  <- 1
@@ -115,7 +113,7 @@ buildOkunsFM <- function(p){
   
   W(OkunsDLMfm)[4,4] <- exp(p[4])
   
-  m0(OkunsDLMfm) <- c(0,0,0,p[1]*-4)
+  m0(OkunsDLMfm) <- c(0,0,0,p[1]*4)
   
   C0(OkunsDLMfm)[1,1] <- 1
   
@@ -145,20 +143,20 @@ smoothed <- dlmSmooth(y = mod_data$dur, mod = OkunsDLM1fm)
 residuals(filtered)
 
 
-data.frame(GDPgrowth = mod_data$d2lgdp[-1],
-           Potential = dropFirst(filtered.fm$a[,4])/(-1*dropFirst(filtered.fm$a[,2])),
-           Date = seq(as.Date("1960-12-01"),as.Date("2015-03-01"), by = "quarter")) %>% 
+data.frame(GDPgrowth = mod_data$d2lgdp,
+           Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
+           Date = seq(as.Date("1960-09-01"),as.Date("2015-03-01"), by = "quarter")) %>% 
   gather(Var, Val, -Date) %>% 
   ggplot()+
   geom_line(aes(Date,Val, colour = Var))
 
 
-States <- data.frame(Date = seq(as.Date("1960-12-01"),as.Date("2015-03-01"), by = "quarter"), 
-                     GDPgrowth = mod_data$d2lgdp[-1],
-                     Potential = dropFirst(filtered.fm$a[,4])/(-1*dropFirst(filtered.fm$a[,2])),
-                     alpha = dropFirst(filtered.fm$a[,1]),
-                     beta = dropFirst(filtered.fm$a[,2]),
-                     gamma = dropFirst(filtered.fm$a[,3])
+States <- data.frame(Date = seq(as.Date("1960-09-01"),as.Date("2015-03-01"), by = "quarter"), 
+                     GDPgrowth = mod_data$d2lgdp,
+                     Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
+                     alpha = dropFirst(filtered.fm$m[,1]),
+                     beta = dropFirst(filtered.fm$m[,2]),
+                     gamma = dropFirst(filtered.fm$m[,3])
                      
                      
                      )
