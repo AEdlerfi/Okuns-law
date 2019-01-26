@@ -142,15 +142,65 @@ filtered.fm <- dlmFilter(y = mod_data$dur, mod = OkunsDLM1fm)
 
 smoothed <- dlmSmooth(y = mod_data$dur, mod = OkunsDLM1fm)
 
-residuals(filtered)
+variances <-  dlmSvd2var(filtered.fm$U.C,filtered.fm$D.C) %>%
+  lapply(sqrt) %>%
+  sapply(diag) %>%
+  t() %>% 
+  data.frame()
+
+variances$Date <- seq(as.Date("1960-06-01"),as.Date("2018-09-01"), by = "quarter")
+
+Upperb <- filtered.fm$m[-1,2]+ variances[-1,2]#*qnorm(0.05,lower = FALSE)
+Lowerb <- filtered.fm$m[-1,2]- variances[-1,2]#*qnorm(0.05,lower = FALSE)
+
+
+Upperbp <- filtered.fm$m[-1,4]+variances[-1,4]#*qnorm(0.05,lower = FALSE)
+Lowerbp <- filtered.fm$m[-1,4]-variances[-1,4]#*qnorm(0.05,lower = FALSE)
+
 
 
 data.frame(GDPgrowth = mod_data$d2lgdp,
            Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
+           upper = Upperbp/(abs(Upperb)),
+           lower = Lowerbp/(abs(Lowerb)),
            Date = seq(as.Date("1960-09-01"),as.Date("2018-09-01"), by = "quarter")) %>% 
   gather(Var, Val, -Date) %>% 
+  filter(Var != "GDPgrowth" & Date >= "1979-12-01") %>%
+  spread(Var, Val) %>% 
   ggplot()+
-  geom_line(aes(Date,Val, colour = Var))
+  geom_line(aes(Date,Potential), colour = "red", size = 1)+
+  geom_ribbon(aes(x = Date, ymin = lower, ymax = upper) , alpha = 0.2)+
+  theme_bw()+
+  theme(legend.position = "none")+
+  ylim(0.5,8.5)+
+  ylab("")+
+  xlab("")+
+  ggtitle("Potential output growth",subtitle = "annualised % change")+
+  annotate("segment", x=ymd("2010-06-01"), xend =ymd("2012-06-01") , y= 6, yend= 4.5, arrow = arrow(), colour = "dark grey" )+
+  annotate("text", x=ymd("2010-06-01") , y= 6.5, label = "+/- One S.D", colour = "dark grey")+
+  annotate("segment", x=ymd("2012-06-01"), xend =ymd("2017-06-01") , y= 1, yend= 2.5, arrow = arrow(), colour = "red" )+
+  annotate("text", x=ymd("2012-06-01") , y=0.75 , label = "Potenatial output growth", colour = "red")
+
+
+data.frame(GDPgrowth = mod_data$d2lgdp,
+           Potential = dropFirst(filtered.fm$m[,4])/(-1*dropFirst(filtered.fm$m[,2])),
+           upper = Upperbp/(abs(Upperb)),
+           lower = Lowerbp/(abs(Lowerb)),
+           Date = seq(as.Date("1960-09-01"),as.Date("2018-09-01"), by = "quarter")) %>% 
+  gather(Var, Val, -Date) %>% 
+  filter(!Var %in% c("upper","lower") & Date >= "1979-12-01") %>%
+  spread(Var, Val) %>% 
+  ggplot()+
+  geom_line(aes(Date,GDPgrowth), colour = "black", size = 0.5)+
+  geom_line(aes(Date,Potential), colour = "red", size = 1)+
+  theme_bw()+
+  theme(legend.position = "none")+
+  ylab("")+
+  xlab("")+
+  ggtitle("Potential and actual output growth",subtitle = "annualised % change")+
+  annotate("text", x=ymd("2011-06-01") , y= 5.5, label = "Real GDP growth", colour = "black")+
+  annotate("text", x=ymd("2012-06-01") , y=0 , label = "Potential output growth", colour = "red")
+
 
 
 States <- data.frame(Date = seq(as.Date("1960-09-01"),as.Date("2018-09-01"), by = "quarter"), 
