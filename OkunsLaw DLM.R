@@ -97,7 +97,7 @@ OkunsDLMfm <- dlm(
 
 buildOkunsFM <- function(p){
   
-  V(OkunsDLMfm)  <- exp(p[2])
+  V(OkunsDLMfm)  <- exp(p[1])
   
   GG(OkunsDLMfm)[1,1]  <- 1
   
@@ -107,15 +107,15 @@ buildOkunsFM <- function(p){
   
   GG(OkunsDLMfm)[4,4]  <- 1
   
-  W(OkunsDLMfm)[1,1] <- exp(p[3])
+  W(OkunsDLMfm)[1,1] <- exp(p[2])
   
   W(OkunsDLMfm)[2,2] <- 0
   
   W(OkunsDLMfm)[3,3] <- 0
   
-  W(OkunsDLMfm)[4,4] <- exp(p[4])
+  W(OkunsDLMfm)[4,4] <- exp(p[3])
   
-  m0(OkunsDLMfm) <- c(0,0,0,p[1]*4)
+  m0(OkunsDLMfm) <- c(0,0,0,0)
   
   C0(OkunsDLMfm)[1,1] <- 1
   
@@ -128,7 +128,7 @@ buildOkunsFM <- function(p){
 
 
 
-okuns.estfm <-  dlmMLE(y = mod_data$dur, parm = c(beta.start,-1.4,-6,-5), build = buildOkunsFM)
+okuns.estfm <-  dlmMLE(y = mod_data$dur, parm = c(-1.4,-6,-5), build = buildOkunsFM)
 
 
 OkunsDLM1fm <- buildOkunsFM(okuns.estfm$par)
@@ -179,7 +179,7 @@ data.frame(GDPgrowth = mod_data$d2lgdp,
   annotate("segment", x=ymd("2010-06-01"), xend =ymd("2012-06-01") , y= 6, yend= 4.5, arrow = arrow(), colour = "dark grey" )+
   annotate("text", x=ymd("2010-06-01") , y= 6.5, label = "+/- One S.D", colour = "dark grey")+
   annotate("segment", x=ymd("2012-06-01"), xend =ymd("2017-06-01") , y= 1, yend= 2.5, arrow = arrow(), colour = "red" )+
-  annotate("text", x=ymd("2012-06-01") , y=0.75 , label = "Potenatial output growth", colour = "red")
+  annotate("text", x=ymd("2012-06-01") , y=0.75 , label = "Potential output growth", colour = "red")
 
 
 data.frame(GDPgrowth = mod_data$d2lgdp,
